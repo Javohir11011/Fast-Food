@@ -26,7 +26,9 @@ export class ProductEntity {
   @Column({ type: 'uuid', name: 'category_id' })
   category_id: string;
 
-  @ManyToOne(() => CategoryEntity, (category) => category.products)
+  @ManyToOne(() => CategoryEntity, (category) => category.products, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'category_id' })
   category: CategoryEntity;
 
