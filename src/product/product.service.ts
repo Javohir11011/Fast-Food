@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { validate } from 'uuid';
 
 @Injectable()
 export class ProductService {
@@ -23,7 +25,9 @@ export class ProductService {
     if (oldProduct) {
       throw new ConflictException('Name already exisist');
     }
-
+    if (!validate(createProductDto.category_id)) {
+      throw new HttpException('Invalid category_id', 400);
+    }
     return await this.repo.save(createProductDto);
   }
 
@@ -52,6 +56,10 @@ export class ProductService {
         throw new ConflictException('Name already exisist');
       }
     }
+
+    // if (!validate(updateProductDto?.category_id)) {
+    //   throw new HttpException('Invalid category_id', 400);
+    // }
     await this.repo.update(id, updateProductDto);
 
     // Object.assign(product, updateProductDto);
