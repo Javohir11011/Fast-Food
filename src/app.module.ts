@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { CustomJwtModule } from './config/jwt/jwt.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CustomJwtModule } from './config/jwt/jwt.module';
       autoLoadEntities: true,
     }),
     CustomJwtModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],
