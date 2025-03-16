@@ -1,26 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ProductEntity } from './entities/product.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(
+    @InjectRepository(ProductEntity)
+    private readonly repo: Repository<ProductEntity>,
+  ) {}
+  async create(createProductDto: CreateProductDto) {
+    const oldProduct = await this.repo.findOneBy({
+      name: createProductDto.name,
+    });
+
+    if (oldProduct) {
+      throw new ConflictException('Name already exisist');
+    }
+
+    return await this.repo.save(createProductDto);
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll() {
+    return await this.repo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const product = await this.repo.findOneBy({ id });
+    if (!product) {
+      throw new NotFoundException('Not found');
+    }
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const product = await this.repo.findOneBy({ id });
+    if (!product) {
+      throw new NotFoundException('Not found');
+    }
+    if (updateProductDto?.name) {
+      const oldCategory = await this.repo.findOneBy({
+        name: updateProductDto.name,
+      });
+      if (oldCategory) {
+        throw new ConflictException('Name already exisist');
+      }
+    }
+    await this.repo.update(id, updateProductDto);
+
+    // Object.assign(product, updateProductDto);
+    return { ...product, ...updateProductDto };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.repo.findOneBy({ id });
+    if (!product) {
+      throw new NotFoundException('Not found');
+    }
+    await this.repo.delete(id);
+
+    return {
+      message: 'success',
+    };
   }
 }
